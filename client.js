@@ -13,12 +13,13 @@ const getFeedbackByProductViewData = async (product, actualize = false) => {
                     }
                 }).then(({data}) => {
                     const {users} = data;
-                    let sorted = feedback.sort((a, b) => (a.date > b.date));
+                    let temp = feedback;
                     if (actualize) {
-                        sorted = feedback.sort((a, b) => (a.date < b.date)).filter((item, index, self) => {
+                        temp = temp.sort((a, b) => b.date - a.date).filter((item, index, self) => {
                             return self.findIndex(f => f.userId === item.userId) === index;
-                        }).sort((a, b) => (a.date > b.date));
+                        });
                     }
+                    const sorted = temp.sort((a, b) => a.date - b.date);
                     result.feedback = sorted.map(item => {
                         let user = users.find(user => user.id === item.userId);
                         let date = new Date(item.date);
