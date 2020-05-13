@@ -13,7 +13,13 @@ const getFeedbackByProductViewData = async (product, actualize = false) => {
                     }
                 }).then(({data}) => {
                     const {users} = data;
-                    result.feedback = feedback.sort((a, b) => a.date > b.date).map(item => {
+                    let sorted = feedback.sort((a, b) => (a.date > b.date));
+                    if (actualize) {
+                        sorted = feedback.sort((a, b) => (a.date < b.date)).filter((item, index, self) => {
+                            return self.findIndex(f => f.userId === item.userId) === index;
+                        }).sort((a, b) => (a.date > b.date));
+                    }
+                    result.feedback = sorted.map(item => {
                         let user = users.find(user => user.id === item.userId);
                         let date = new Date(item.date);
                         return {
@@ -22,6 +28,7 @@ const getFeedbackByProductViewData = async (product, actualize = false) => {
                             date: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
                         }
                     });
+
                     return result;
                 });
             } else {
@@ -31,7 +38,7 @@ const getFeedbackByProductViewData = async (product, actualize = false) => {
             }
         })
         .catch(error => {
-            if(error.response.status === 404){
+            if (error.response.status === 404) {
                 return error.response.data;
             }
         });
